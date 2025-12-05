@@ -193,6 +193,7 @@ void LidarCar::ControlWheel(int8_t X, int8_t Y, byte A)// X, Y, A: -7 ~ 7
   //！将参数通过controlMap表格转化为四个电机的参数值
   //! controlMapX 为横向移动 时数据表格
   //！controlMap  为正常移动 时数据表格
+  Serial.printf("------------------------------ControlWheel called: X=%d Y=%d A=%d\n", X,Y,A);
   if (A == 0x01){
     wheelPowerA = controlMapX[7 + Y][X + 7];
     wheelPowerB = controlMapY[7 + Y][X + 7];
