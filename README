@@ -1,4 +1,4 @@
-# X2 LidarBot Maze Solver
+# X2 LiDARBot Maze Solver
 
 An autonomous maze-solving robot built with **M5Stack** and an **X2 LiDAR sensor**, implementing a right-hand wall-following algorithm with intelligent path detection.
 
@@ -6,9 +6,14 @@ An autonomous maze-solving robot built with **M5Stack** and an **X2 LiDAR sensor
 
 ## Hardware Requirements
 
-* **M5Stack Core** — Main controller
-* **X2 LiDAR Sensor** — 360° distance sensing (connected via `Serial1`, pins **16/17**)
-* **LidarCar Base** — Motor control platform
+- **M5Stack Core**  
+  Main controller
+
+- **X2 LiDAR Sensor**  
+  360° distance sensing (Serial1, pins 16/17)
+
+- **LidarCar Base**  
+  Motor control platform
 
 ---
 
@@ -16,14 +21,23 @@ An autonomous maze-solving robot built with **M5Stack** and an **X2 LiDAR sensor
 
 ### Core Functionality
 
-* **Autonomous Maze Navigation** — Right-hand wall-following algorithm
-* **360° LiDAR Mapping** — Real-time environment visualization on the M5Stack display
-* **Reflective Exit Detection** — Automatically detects maze completion using reflective markers
-* **Data Filtering** — Interpolation algorithm removes noise and invalid readings
+- **Autonomous Maze Navigation**  
+  Implements a right-hand wall-following strategy
+
+- **360° LiDAR Mapping**  
+  Real-time environment visualization on the M5Stack display
+
+- **Reflective Exit Detection**  
+  Automatically detects maze completion using reflective markers
+
+- **LiDAR Data Filtering**  
+  Interpolation-based cleaning removes noise and invalid measurements
+
+---
 
 ### Navigation Logic
 
-The robot prioritizes paths in the following order:
+The robot prioritizes available paths in the following order:
 
 1. **Right turn** (when available)
 2. **Forward** (if right is blocked)
@@ -36,29 +50,39 @@ The robot prioritizes paths in the following order:
 
 ### Manual Control
 
-Navigate manually using keyboard commands:
+Control the robot using keyboard commands:
 
-* `W` — Forward
-* `S` — Backward
-* `A` — Turn left
-* `D` — Turn right
-* `X` — Stop
+- `W` — Move forward  
+- `S` — Move backward  
+- `A` — Turn left  
+- `D` — Turn right  
+- `X` — Stop
+
+---
 
 ### Maze Mode
 
-* `M` — Toggle autonomous maze solving on/off  
-* Robot automatically navigates using the wall-following algorithm
+- `M` — Toggle autonomous maze-solving mode  
+- The robot navigates automatically using the wall-following algorithm
+
+---
 
 ### Calibration Mode
 
-* `C` — Enter turn calibration mode
-  * `1` — Test right 90° turn
-  * `2` — Test left 90° turn
-  * `3` — Test 180° turn
-  * `+` — Increase turn duration by **100 ms**
-  * `-` — Decrease turn duration by **100 ms**
-  * `S` — Show current calibration values
-  * `Q` — Exit calibration mode
+- `C` — Enter calibration mode
+
+  Turn testing:
+  - `1` — Test right 90° turn
+  - `2` — Test left 90° turn
+  - `3` — Test 180° turn
+
+  Adjustment:
+  - `+` — Increase turn duration by 100 ms
+  - `-` — Decrease turn duration by 100 ms
+
+  Utilities:
+  - `S` — Show current calibration values
+  - `Q` — Exit calibration mode
 
 ---
 
@@ -66,6 +90,125 @@ Navigate manually using keyboard commands:
 
 ### Detection Thresholds
 
-```cpp
-threshold_front = 105.0;    // Minimum distance to consider path open ahead (mm)
-threshhold_sides = 150.0;   // Minimum distance for left/right openings (mm)
+    threshold_front  = 105.0 mm   // Minimum distance to consider front path open
+    threshold_sides  = 150.0 mm   // Minimum distance for left/right openings
+
+---
+
+### Turn Durations (Robot-dependent)
+
+    turnDuration90Right = 2200 ms
+    turnDuration90Left  = 2200 ms
+    turnDuration180     = 4300 ms
+
+These values must be calibrated for each robot.
+
+---
+
+### LiDAR Scanning Zones
+
+- **Front**: 155° – 195°   (indexes 310–390)
+- **Left**: 70° – 116.5°  (indexes 140–233)
+- **Right**: 252.5° – 290° (indexes 505–580)
+
+---
+
+### Exit Detection
+
+- Detects reflective surfaces with distance readings greater than **4000 mm**
+- Requires **15+ consecutive readings**
+- Confirmation requires **two consecutive detection cycles**
+
+---
+
+## Algorithm Details
+
+### LiDAR Data Cleaning
+
+The `cleanLidarData()` function interpolates invalid readings using neighboring valid values within a 2-index gap.  
+Measurements outside the **80–8000 mm** range are discarded.
+
+---
+
+### U-Turn Prevention
+
+After executing a right turn or a U-turn, the robot ignores right-turn opportunities for **2 seconds** to prevent immediate backtracking.
+
+---
+
+### Maze Exit Detection
+
+Reflective tape or surfaces placed at the maze exit produce large LiDAR returns.  
+When high-reflectivity readings (>4000 mm) persist across the front scanning zone, maze completion is confirmed.
+
+---
+
+## Display Features
+
+- **Real-time LiDAR visualization** using a polar plot
+- **Robot position indicator** shown as a red dot at the center
+
+---
+
+## Getting Started
+
+1. Upload the code to the M5Stack
+2. Enter calibration mode (`C`) and tune turn durations
+3. Place the robot at the maze entrance
+4. Press `M` to start autonomous navigation
+5. The robot stops automatically when the exit is detected
+
+---
+
+## Technical Architecture
+
+### Serial Communication
+
+- **Serial (115200)**  
+  Debug output and keyboard control
+
+- **Serial1 (115200, pins 16/17)**  
+  X2 LiDAR data stream
+
+- **Serial2 (115200)**  
+  Motor control commands
+
+---
+
+## Maze Design Requirements
+
+- Wall clearance:
+  - Front: >105 mm
+  - Sides: >150 mm
+- Exit must include **reflective tape or surface**
+- Smooth, continuous walls are recommended for reliable LiDAR readings
+
+---
+
+## Troubleshooting
+
+**Robot does not turn accurately**
+- Re-run calibration mode (`C`) and adjust turn durations
+
+**Robot fails to detect openings**
+- Verify threshold values match maze dimensions
+- Check LiDAR operation (use `P` to print distance values)
+
+**Exit is not detected**
+- Ensure reflective marker is present and visible
+- Verify `REFLECTIVE_THRESHOLD` (default: 4000 mm)
+
+**Erratic behavior**
+- Check Serial1 wiring (pins 16/17)
+- Confirm LidarCar motor controller is receiving commands on Serial2
+
+---
+
+## PlatformIO Test Directory
+
+This directory is intended for **PlatformIO Test Runner** and project tests.
+
+Unit testing validates individual MCU modules, control logic, and data handling early in development.
+
+More information:
+https://docs.platformio.org/en/latest/advanced/unit-testing/index.html
