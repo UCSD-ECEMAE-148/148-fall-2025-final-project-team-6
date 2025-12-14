@@ -46,13 +46,12 @@ Navigate manually using keyboard commands:
 
 ### Maze Mode
 
-* `M` — Toggle autonomous maze solving on/off
+* `M` — Toggle autonomous maze solving on/off  
 * Robot automatically navigates using the wall-following algorithm
 
 ### Calibration Mode
 
 * `C` — Enter turn calibration mode
-
   * `1` — Test right 90° turn
   * `2` — Test left 90° turn
   * `3` — Test 180° turn
@@ -70,118 +69,3 @@ Navigate manually using keyboard commands:
 ```cpp
 threshold_front = 105.0;    // Minimum distance to consider path open ahead (mm)
 threshhold_sides = 150.0;   // Minimum distance for left/right openings (mm)
-```
-
-### Turn Durations
-
-> ⚠️ Calibrate these values for your specific robot
-
-```cpp
-turnDuration90Right = 2200; // ms
-turnDuration90Left  = 2200; // ms
-turnDuration180     = 4300; // ms
-```
-
-### LiDAR Scanning Zones
-
-* **Front**: 155° – 195° (indexes **310–390**)
-* **Left**: 70° – 116.5° (indexes **140–233**)
-* **Right**: 252.5° – 290° (indexes **505–580**)
-
-### Exit Detection
-
-* Detects reflective surfaces **> 4000 mm**
-* Requires **15+ consecutive readings**
-* Needs **2 consecutive detection cycles** to confirm maze completion
-
----
-
-## Algorithm Details
-
-### Data Cleaning
-
-The `cleanLidarData()` function interpolates invalid readings using adjacent valid data points within a **2-index gap**, filtering out values outside the **80–8000 mm** range.
-
-### U-Turn Prevention
-
-After executing a **right turn** or **U-turn**, the robot ignores right-turn opportunities for **2 seconds** to prevent immediate backtracking.
-
-### Maze Exit Detection
-
-Reflective tape or markers are placed at the maze exit. When the LiDAR detects highly reflective surfaces (> 4000 mm) across the **front scanning zone**, the robot confirms maze completion and stops.
-
----
-
-## Display Features
-
-* **Real-time LiDAR visualization** — Polar plot showing detected obstacles
-* **Robot position indicator** — Red dot at the center of the display
-
----
-
-## Getting Started
-
-1. **Upload the code** to your M5Stack
-2. **Calibrate turns** using calibration mode (`C`) for accurate 90° and 180° rotations
-3. **Position the robot** at the maze entrance
-4. **Press `M`** to start autonomous maze solving
-5. **Robot stops automatically** when the reflective exit is detected
-
----
-
-## Technical Architecture
-
-### Serial Communication
-
-* **Serial** (`115200`) — Debug output and keyboard control
-* **Serial1** (`115200`, pins **16/17**) — X2 LiDAR data
-* **Serial2** (`115200`) — Motor control commands
-
----
-
-## Maze Design Requirements
-
-* Wall separation:
-
-  * **> 105 mm** (front)
-  * **> 150 mm** (sides)
-* **Exit marker** — Reflective tape or surface at the maze exit
-* Recommended:
-
-  * Smooth, continuous walls
-  * Minimal gaps for consistent LiDAR readings
-
----
-
-## Troubleshooting
-
-### Robot doesn't turn accurately
-
-* Run calibration mode (`C`) and fine-tune turn durations
-
-### Fails to detect openings
-
-* Verify threshold values match your maze dimensions
-* Confirm LiDAR operation (use `P` to print distances)
-
-### Doesn't detect exit
-
-* Ensure reflective marker is present and visible to the front sensors
-* Check `REFLECTIVE_THRESHOLD` value (default: **4000 mm**)
-
-### Erratic behavior
-
-* Verify `Serial1` wiring (pins **16/17**)
-* Confirm LidarCar base is receiving commands on `Serial2`
-
----
-
-## PlatformIO Unit Testing
-
-This directory is intended for the **PlatformIO Test Runner** and project tests.
-
-Unit testing verifies individual modules of MCU firmware along with associated control data and usage procedures to ensure correctness and reliability. Testing early helps catch bugs before deployment.
-
-More information:
-
-* [https://docs.platformio.org/en/latest/advanced/unit-testing/index.html](https://docs.platformio.org/en/latest/advanced/unit-testing/index.html)
